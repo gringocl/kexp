@@ -17,7 +17,7 @@ dates.each do |date|
     begin
       url = "http://kexp.org/playlist/#{date.strftime('%Y')}/#{date.strftime('%-m')}/#{date.strftime('%-d')}/#{time}"
       doc = Nokogiri::HTML(open(url))
-      
+
       doc.css('div[data-playlistitem]').each do |div|
         playlistitem = JSON.parse div['data-playlistitem']
 
@@ -25,7 +25,7 @@ dates.each do |date|
         puts "insertion complete..."
         playlistitem = nil
       end
-      
+
       doc = nil
       puts "Finished #{date} and #{time}"
     rescue Timeout::Error
