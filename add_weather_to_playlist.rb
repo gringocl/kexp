@@ -19,14 +19,17 @@ def hourly_weather_doc(weather_doc, playlist_doc)
   weather_doc["hourly"]["data"][playlist_hour(playlist_doc)]
 end
 
-def insert_weather_into_playlist_doc(playlist_collection, playlist_doc, weather_doc)
-  playlist_collection.update({"_id"  => playlist_doc["_id"]},
-                    {"$set" => {"WeatherInfo" => hourly_weather_doc(weather_doc, playlist_doc) }})
+def insert_weather_into_playlist_doc(bulk, playlist_doc, weather_doc)
+  bulk.find({"_id"  => playlist_doc["_id"]}).update({"$set" => {"WeatherInfo" => hourly_weather_doc(weather_doc, playlist_doc) }})
 end
 
 def find_and_add_weather(playlist_collection, weather_collection)
-  playlist_collection.find.each do |playlist_doc|
-    weather_doc = search_weather_for_playlist_date(playlist_doc, weather_collection)
-    insert_weather_into_playlist_doc(playlist_collection, playlist_doc, weather_doc)
+  playlist_collection.find.each_slice(10_000) do |playlist_slice|
+    bulk = playlist_collection.initialize_ordered_bulk_op
+    playlist_slice.each do |playlist_doc|
+      weather_doc = search_weather_for_playlist_date(playlist_doc, weather_collection)
+      insert_weather_into_playlist_doc(bulk, playlist_doc, weather_doc)
+    end
+    bulk.execute
   end
 end
