@@ -15,7 +15,10 @@ times = %w[1am 2am 3am 4am 5am 6am 7am 8am 9am 10am 11am 12pm
 dates.each do |date|
   times.each do |time|
     begin
-      url = "http://kexp.org/playlist/#{date.strftime('%Y')}/#{date.strftime('%-m')}/#{date.strftime('%-d')}/#{time}"
+      year = date.strftime('%Y')
+      month = date.strftime('%-m')
+      day = date.strftime('%-d')
+      url = "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{time}"
       doc = Nokogiri::HTML(open(url))
 
       doc.css('div[data-playlistitem]').each do |div|
