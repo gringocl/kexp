@@ -1,10 +1,9 @@
 require 'json'
 require 'echowrap'
 require 'pry'
+require 'dotenv'
 
 def yearly(collection, years)
-  ticket_numbers = ""
-
   years.each do |year|
     start_date = Time.local(year).utc
     end_date   = Time.local(year+1).utc
@@ -23,14 +22,18 @@ def yearly(collection, years)
                                    "song_name"   => track } }
       data << taste_object
     end
+
+    Dotenv.load
+
+    Echowrap.configure do |c|
+      c.api_key = ENV['ECHONEST_API_KEY']
+      c.consumer_key = ENV['ECHONEST_CONSUMER_KEY']
+      c.shared_secret = ENV['ECHONEST_SHARED_SECRET']
+    end
+
     name = "#{collection.name} year #{year} - #{rand(100)}"
     taste_profile = Echowrap.taste_profile_create(name: name, type: "general")
     taste_update  = Echowrap.taste_profile_update(id: taste_profile.id, data: data.to_json)
 
-    ticket_numbers << taste_update.ticket
   end
-
-  file = File.open('tickets.txt', 'w')
-  file.write(ticket_numbers)
-  file.close
 end
