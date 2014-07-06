@@ -16,6 +16,15 @@ def find_ascii_only(collection, key)
   end
 end
 
+def remove_windows_funk(collection, field)
+  funk = collection.find({ field => /â€™/}).to_a
+  funk.each do |f|
+    string = f[field]
+    new_string = str.gsub("â€™", "'")
+    collection.update({"_id" => f['_id']}, {"$set" => {field => new_string}})
+  end
+end
+
 def fix_encoding(array_of_ids, collection, key, encoding)
   array_of_ids.each do |ids|
     doc = collection.find_one({"_id" => ids })
