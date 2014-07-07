@@ -23,17 +23,24 @@ def yearly(collection, years)
       data << taste_object
     end
 
-    Dotenv.load
+    # Dotenv.load
+    #
+    # Echowrap.configure do |c|
+    #   c.api_key = ENV['ECHONEST_API_KEY']
+    #   c.consumer_key = ENV['ECHONEST_CONSUMER_KEY']
+    #   c.shared_secret = ENV['ECHONEST_SHARED_SECRET']
+    # end
+    #
+    # name = "#{collection.name} year #{year} - #{rand(100)}"
+    # taste_profile = Echowrap.taste_profile_create(name: name, type: "general")
+    # taste_update  = Echowrap.taste_profile_update(id: taste_profile.id, data: data.to_json)
 
-    Echowrap.configure do |c|
-      c.api_key = ENV['ECHONEST_API_KEY']
-      c.consumer_key = ENV['ECHONEST_CONSUMER_KEY']
-      c.shared_secret = ENV['ECHONEST_SHARED_SECRET']
-    end
+    file = File.open("#{year}.json", "w")
+    file.write(data.to_json)
+    file.close
 
-    name = "#{collection.name} year #{year} - #{rand(100)}"
-    taste_profile = Echowrap.taste_profile_create(name: name, type: "general")
-    taste_update  = Echowrap.taste_profile_update(id: taste_profile.id, data: data.to_json)
+    puts "#{year} complete!"
 
   end
+
 end

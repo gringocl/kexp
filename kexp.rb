@@ -1,3 +1,6 @@
+# This script extracts playlist json attributes from kexp's playlist
+# and dumps them in a mongo db
+
 require 'nokogiri'
 require 'open-uri'
 require 'mongo'
