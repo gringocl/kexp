@@ -21,7 +21,7 @@ def update_mongo
     total_items = Echowrap.taste_profile_profile(id: id).total
     times = (total_items/1000) + 1
 
-    start = 1
+    start = 0
     bucket = %w[ audio_summary artist_discovery artist_discovery_rank
                  artist_familiarity artist_familiarity_rank artist_hotttnesss
                  artist_hotttnesss_rank artist_location song_currency
@@ -46,10 +46,10 @@ def update_mongo
           bson_id = BSON::ObjectId.from_string(mongo_id)
 
           playlist.update({"_id" => bson_id}, {"$set" => update})
-          start += 999
+          start += 1000
         else
           puts "#{item}"
-          start += 999
+          start += 1000
         end
       end
       puts "finished - #{start}"
