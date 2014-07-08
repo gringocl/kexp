@@ -1,7 +1,5 @@
 require 'minitest/autorun'
 require 'kexp'
-require 'JSON'
-require 'fakeweb'
 
 describe KexpScraper do
 
