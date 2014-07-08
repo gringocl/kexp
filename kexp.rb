@@ -1,10 +1,8 @@
 require 'minitest/autorun'
 require 'nokogiri'
 require 'open-uri'
-require 'mongo'
 require 'JSON'
-
-include Mongo
+require 'fakeweb'
 
 class KexpScraper
 
@@ -28,35 +26,37 @@ class KexpScraper
       "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{hour}"
     end
   end
-    #     begin
-    #       year, month, day = date.strftime('%F').split("-")
-    #       url = "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{time}"
-    #       doc = Nokogiri::HTML(open(url))
-    #
-    #       doc.css('div[data-playlistitem]').each do |div|
-    #         playlistitem = JSON.parse div['data-playlistitem']
-    #         coll.insert(playlistitem)
-    #         puts "insertion complete..."
-    #         playlistitem = nil
-    #       end
-    #
-    #       doc = nil
-    #       puts "Finished #{date} and #{time}"
-    #     rescue Timeout::Error
-    #       puts "The request for #{url} page has timed out"
-    #       next
-    #     rescue OpenURI::HTTPError => e
-    #       puts "The request for #{url}, returned an error. #{e.message}"
-    #       next
-    #     end
-    #   end
-    #   puts "Completed #{date}"
-    # end
-    # puts "Completed all dates"
+
+  def playlist_and_dj_scraper(url)
+    result = {}
+    page = Nokogiri::HTML(open(url))
+
+    result[:hosts] = show_host(page)
+    result[:playlist_items] = playlist_items(page)
+
+    result
+  end
+
+  def show_host(page)
+    page.css('div.ShowHost').map { |div| div.text.strip }
+  end
+
+  def playlist_items(page)
+    page.css('div[data-playlistitem]').map { |div| div['data-playlistitem'] }
+  end
 
 end
 
 describe KexpScraper do
+
+  before do
+    FakeWeb.register_uri(:get,
+                         "http://kexp.org/playlist/2014/7/6/12pm",
+                         response: File.join(File.dirname(__FILE__),
+                                             'spec',
+                                             'fixtures',
+                                             'playlist.html'))
+  end
 
   let(:kexp_scraper) { KexpScraper.new(Time.new(2014, 7, 6, 12), Time.new(2014, 7, 6, 13)) }
 
@@ -74,6 +74,12 @@ describe KexpScraper do
     result[1].must_equal "http://kexp.org/playlist/2014/7/6/1pm"
   end
 
+  it "#playlist_and_dj_scraper returns times' playlist_items and current dj" do
+    result = kexp_scraper.playlist_and_dj_scraper("http://kexp.org/playlist/2014/7/6/12pm")
+
+    result[:hosts].must_include "Stevie Zoom"
+    result[:playlist_items].to_json.must_match /The Ruby Suns/
+  end
 
 
 end
