@@ -1,6 +1,4 @@
-# This script extracts playlist json attributes from kexp's playlist
-# and dumps them in a mongo db
-
+require 'minitest/autorun'
 require 'nokogiri'
 require 'open-uri'
 require 'mongo'
@@ -8,46 +6,74 @@ require 'JSON'
 
 include Mongo
 
-mongo_client = MongoClient.new("localhost", 27017)
-db = mongo_client.db("kexp")
-coll = db.collection("playlist")
+class KexpScraper
 
-dates = Date.new(2014,1,4)..Date.today
-times = %w[1am 2am 3am 4am 5am 6am 7am 8am 9am 10am 11am 12pm
-          1pm 2pm 3pm 4pm 5pm 6pm 7pm 8pm 9pm 10pm 11pm 12am]
-dates.each do |date|
-  times.each do |time|
+  def initialize(start_time, end_time)
+    @start_time = start_time
+    @end_time   = end_time
+  end
+
+  def time_loop
+    time = @start_time
+    times = []
     begin
-      year = date.strftime('%Y')
-      month = date.strftime('%-m')
-      day = date.strftime('%-d')
-      url = "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{time}"
-      doc = Nokogiri::HTML(open(url))
+      times << time.strftime('%Y %-m %-d %l%P').split(' ')
+    end while (time += 3600) <= @end_time
+    times
+  end
 
-      doc.css('div[data-playlistitem]').each do |div|
-        playlistitem = JSON.parse div['data-playlistitem']
-
-        coll.insert(playlistitem)
-        puts "insertion complete..."
-        playlistitem = nil
-      end
-
-      doc = nil
-      puts "Finished #{date} and #{time}"
-    rescue Timeout::Error
-      puts "The request for #{url} page has timed out"
-      next
-    rescue OpenURI::HTTPError => e
-      puts "The request for #{url}, returned an error. #{e.message}"
-      next
+  def url_builder
+    time_loop.map do |time|
+      year, month, day, hour = time
+      "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{hour}"
     end
   end
-  puts "Completed #{date}"
+    #     begin
+    #       year, month, day = date.strftime('%F').split("-")
+    #       url = "http://kexp.org/playlist/#{year}/#{month}/#{day}/#{time}"
+    #       doc = Nokogiri::HTML(open(url))
+    #
+    #       doc.css('div[data-playlistitem]').each do |div|
+    #         playlistitem = JSON.parse div['data-playlistitem']
+    #         coll.insert(playlistitem)
+    #         puts "insertion complete..."
+    #         playlistitem = nil
+    #       end
+    #
+    #       doc = nil
+    #       puts "Finished #{date} and #{time}"
+    #     rescue Timeout::Error
+    #       puts "The request for #{url} page has timed out"
+    #       next
+    #     rescue OpenURI::HTTPError => e
+    #       puts "The request for #{url}, returned an error. #{e.message}"
+    #       next
+    #     end
+    #   end
+    #   puts "Completed #{date}"
+    # end
+    # puts "Completed all dates"
+
 end
-puts "Completed all dates"
+
+describe KexpScraper do
+
+  let(:kexp_scraper) { KexpScraper.new(Time.new(2014, 7, 6, 12), Time.new(2014, 7, 6, 13)) }
+
+  it "#time_loop returns array of year, month, day, and 12hr am/pm" do
+    result = kexp_scraper.time_loop
+
+    result[0].must_equal ["2014", "7", "6", "12pm"]
+    result[1].must_equal ["2014", "7", "6", "1pm"]
+  end
+
+  it "#url_builder returns array of strings(uri) for each time loop" do
+    result = kexp_scraper.url_builder
+
+    result[0].must_equal "http://kexp.org/playlist/2014/7/6/12pm"
+    result[1].must_equal "http://kexp.org/playlist/2014/7/6/1pm"
+  end
 
 
-# DateTime.strptime(date, '%Q') # no timezone
-# airdate.scan(/\d+/).first
-# 2008/6/14
-# 2014/1/4/1am
+
+end
