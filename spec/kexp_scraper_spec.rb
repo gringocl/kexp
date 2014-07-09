@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 require 'kexp'
+require 'fakeweb'
 
 describe KexpScraper do
 
@@ -32,5 +33,6 @@ describe KexpScraper do
 
     result[:hosts].must_include "Stevie Zoom"
     result[:playlist_items].to_json.must_match /The Ruby Suns/
+
   end
 end

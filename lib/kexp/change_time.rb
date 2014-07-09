@@ -23,3 +23,9 @@ def change_times_weather(weather)
 
   end
 end
+
+def format_string_epoch_date_to_iso_date(string_date)
+  int_date = string_date.scan(/\d+/).first.to_i
+  Time.at(date.to_i/1000.0)
+end
+

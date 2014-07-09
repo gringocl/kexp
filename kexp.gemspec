@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Kexp::VERSION
   spec.authors       = ["Miles Starkenburg"]
   spec.email         = ["milesstarkenburg@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{KEXP music discovery}
+  spec.description   = %q{Explore and analzye weather's impact on kexp's music selection}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +20,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "fakeweb", ["~> 1.3"]
+  spec.add_development_dependency "echowrap"
+  spec.add_development_dependency "nokogiri"
+  spec.add_development_dependency "mongo"
 end
+

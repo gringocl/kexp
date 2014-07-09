@@ -1,8 +1,6 @@
-require 'minitest/autorun'
 require 'nokogiri'
 require 'open-uri'
 require 'JSON'
-require 'fakeweb'
 
 class KexpScraper
 
